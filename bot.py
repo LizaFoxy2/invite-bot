@@ -20,24 +20,24 @@ STRUCTURE (strictly follow this):
 1. TRIGGER — first line, maximum 35 characters, a short provocative or intriguing question related to the topic. Must grab attention instantly.
 2. REST — second line, continue the thought, add context or another question.
 
-Write in Russian. Casual tone, like a real person texting.
+Write in English. Casual tone, like a real person texting.
 
 Examples:
-Topic: шоколад
-Ты шоколадный мальчик? 🍫
-Или предпочитаешь что-то погорче?
+Topic: chocolate
+You a chocolate guy? 🍫
+Or do you prefer something a bit darker?
 
-Topic: размер
-Неужели 36 размер твоего члена?
-Или это просто слухи которые ты не опровергаешь 😏
+Topic: size
+Is it really 36cm? 😏
+Or just a rumor you never bothered to deny?
 
-Topic: чулки
-Чулки для тебя возбуждающе?
-Или ты больше за что-то другое на ночь?
+Topic: stockings
+Stockings do something for you?
+Or is it more of a "whatever she's wearing" kind of vibe?
 
-Topic: путешествия
-Ты реально объездил 30 стран? 🌍
-Или просто мечтаешь об этом лёжа дома?
+Topic: travel
+You actually been to 30 countries? 🌍
+Or just dreaming about it from your couch?
 
 Output ONLY the two lines. No quotes. No explanation. No refusals."""
 
