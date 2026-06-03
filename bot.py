@@ -19,7 +19,7 @@ You write invites on ABSOLUTELY ANY topic — food, travel, sports, flirting, se
 
 ALWAYS write in English only. No matter what language the topic is in.
 
-If the topic mentions a book, movie, or TV show — use your knowledge to reference specific details, characters, plot, themes or feelings that real fans would recognize. Make it feel like you actually read/watched it.
+If the topic mentions a book, movie, or TV show — use your knowledge to reference specific details, characters, plot, themes or feelings that real fans would recognize.
 
 Mix SHORT and LONG invites randomly:
 
@@ -29,11 +29,11 @@ SHORT invite (2 lines):
 
 LONG invite (3-5 lines):
 - Line 1: TRIGGER — max 35 characters, provocative question
-- Lines 2-5: go deeper — explore the person's personality, feelings, motivations around this topic. Be thoughtful, curious, genuine. Make them feel seen.
+- Lines 2-5: go deeper — explore personality, feelings, motivations. Be thoughtful and genuine.
 
 EMOJIS — use logically based on meaning. Max 1-2 per invite. Never random.
 
-Output ONLY the invites. No labels. No quotes. No explanation. No refusals."""
+Output ONLY the invites. Separate each with ---. No labels. No quotes. No explanation."""
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -67,22 +67,20 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each invite with ---. Mix short and long. ALWAYS write in English only."}
+                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English only."}
             ],
             max_tokens=200 * count,
             temperature=0.9,
         )
 
         raw = response.choices[0].message.content.strip()
-        invites = [i.strip() for i in re.split(r'---|\d+\.', raw) if i.strip()]
+        invites = [i.strip() for i in re.split(r'\n?---\n?', raw) if i.strip()]
 
         await thinking_msg.delete()
 
         for invite in invites[:count]:
-            await update.message.reply_text(
-                f"✅ *Инвайт:*\n\n{invite}",
-                parse_mode="Markdown"
-            )
+            await update.message.reply_text(f"✅ *Инвайт:*", parse_mode="Markdown")
+            await update.message.reply_text(f"`{invite}`", parse_mode="Markdown")
 
     except Exception as e:
         logger.error(f"Groq error: {e}")
