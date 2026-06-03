@@ -1,5 +1,6 @@
 import logging
 import os
+import re
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
 from groq import Groq
@@ -20,7 +21,7 @@ STRUCTURE (strictly follow this):
 1. TRIGGER — first line, maximum 35 characters, a short provocative or intriguing question related to the topic. Must grab attention instantly.
 2. REST — second line, continue the thought, add context or another question.
 
-Write in English. Casual tone, like a real person texting.
+ALWAYS write in English only. No matter what language the topic is in — always respond in English.
 
 Examples:
 Topic: chocolate
@@ -39,7 +40,7 @@ Topic: travel
 You actually been to 30 countries? 🌍
 Or just dreaming about it from your couch?
 
-Output ONLY the two lines. No quotes. No explanation. No refusals."""
+Output ONLY the invites. No quotes. No explanation. No refusals."""
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,7 +52,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Любит путешествия и фитнес\n"
         "• Читает книги, смотрит Peaky Blinders\n"
         "• Флирт, отношения\n"
-        "• Любая другая тема"
+        "• 10 инвайтов про Рим"
     )
 
 
@@ -65,16 +66,20 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
     thinking_msg = await update.message.reply_text("⏳ Генерирую...")
 
     try:
+        count_match = re.search(r'(\d+)', user_input)
+        count = int(count_match.group(1)) if count_match else 1
+        count = min(count, 50)
+
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}"}
+                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). ALWAYS write in English only."}
             ],
-            max_tokens=100,
+            max_tokens=150 * count,
             temperature=0.9,
         )
-        invite = response.choices[0].message.content.strip().strip('"').strip("'")
+        invite = response.choices[0].message.content.strip()
 
         await thinking_msg.delete()
         await update.message.reply_text(
