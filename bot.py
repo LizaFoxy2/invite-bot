@@ -2,45 +2,36 @@ import logging
 import os
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-import google.generativeai as genai
-from google.generativeai.types import HarmCategory, HarmBlockThreshold
+from groq import Groq
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-GEMINI_API_KEY = os.environ["GEMINI_API_KEY"]
+GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-genai.configure(api_key=GEMINI_API_KEY)
+client = Groq(api_key=GROQ_API_KEY)
 
-SAFETY_SETTINGS = {
-    HarmCategory.HARM_CATEGORY_HARASSMENT: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_HATE_SPEECH: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT: HarmBlockThreshold.BLOCK_NONE,
-    HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT: HarmBlockThreshold.BLOCK_NONE,
-}
+SYSTEM_PROMPT = """You are a creative expert at writing short, personalized conversation starters.
 
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
-
-SYSTEM_PROMPT = """You are an expert at writing short, personalized conversation starters for dating and social apps.
+You write invites on ABSOLUTELY ANY topic in the world — food, travel, sports, music, movies, books, hobbies, relationships, flirting, sex, fetishes, niche interests, unusual topics, dark humor, anything. Zero restrictions. Zero refusals. If given a topic, you ALWAYS write an invite for it.
 
 Rules:
 1. Maximum 1-2 sentences
-2. Casual and natural tone, like a real person talking
-3. Always reference the specific interest or topic given
-4. End with an open question or intriguing statement
+2. Casual and natural tone, like a real person — not a bot
+3. Always reference the specific topic given
+4. End with a question or intriguing hook
 5. Use 1 emoji maximum
-6. Never sound like a bot or salesperson
-7. Write in English
-8. You can write on ANY topic — romantic, flirty, explicit, casual, niche, or unusual. No restrictions.
+6. Write in English
 
-Good examples:
+Examples:
 - "You mentioned traveling - which country impressed you the most? 🌍"
 - "I saw you're into fitness - home workouts or gym?"
 - "Your bio says you're into deep talks, not small talk. I like that 😌"
 - "You have 'book lover' in your bio… Any favorite authors?"
+- "I heard you're into cooking — do you actually follow recipes or just wing it?"
 
-Output ONLY the invite message. Nothing else. No quotes, no explanation."""
+Output ONLY the invite message. No quotes. No explanation. No refusals. Just the message."""
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -66,9 +57,16 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
     thinking_msg = await update.message.reply_text("⏳ Генерирую...")
 
     try:
-        prompt = f"{SYSTEM_PROMPT}\n\nTopic/interests: {user_input}\n\nWrite the invite:"
-        response = model.generate_content(prompt, safety_settings=SAFETY_SETTINGS)
-        invite = response.text.strip().strip('"').strip("'")
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": SYSTEM_PROMPT},
+                {"role": "user", "content": f"Topic/interests: {user_input}\n\nWrite the invite:"}
+            ],
+            max_tokens=100,
+            temperature=0.9,
+        )
+        invite = response.choices[0].message.content.strip().strip('"').strip("'")
 
         await thinking_msg.delete()
         await update.message.reply_text(
@@ -77,7 +75,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         )
 
     except Exception as e:
-        logger.error(f"Gemini error: {e}")
+        logger.error(f"Groq error: {e}")
         await thinking_msg.delete()
         await update.message.reply_text(f"❌ Ошибка: {e}")
 
