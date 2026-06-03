@@ -27,7 +27,15 @@ SHORT invite (2 lines):
 
 LONG invite (3-5 lines):
 - Line 1: TRIGGER — max 35 characters, provocative question
-- Lines 2-5: develop the thought, add details, be more personal and engaging
+- Lines 2-5: go deeper — explore the person's personality, feelings, motivations. Be thoughtful, curious, and genuine. Make them feel seen and understood.
+
+DEPTH — for long invites, don't just ask surface questions. Dig into WHY they like something, what it says about them, how it makes them feel. Make it personal and meaningful.
+
+EMOJIS — use emojis logically based on the meaning of the text:
+- Use 🌍 for travel, 🍫 for chocolate, 💪 for fitness, 📚 for books, 🎬 for movies
+- Place emoji where it naturally fits the sentence meaning
+- Never use random emojis — they must match the topic and emotion of that specific line
+- Max 1-2 emojis per invite
 
 Examples of SHORT:
 You a chocolate guy? 🍫
@@ -36,16 +44,16 @@ Or do you prefer something a bit darker?
 Ever been to Rome? 🌍
 Or is it just a dream collecting dust?
 
-Examples of LONG:
+Examples of LONG with depth:
 Stockings do something for you? 😏
 Because honestly, there's something about that detail that says a lot about a person.
-Are you the type who notices things like that, or do you just go with the flow?
-Either way, I'm curious what else you pay attention to.
+Are you the type who notices small things — or do you only see the big picture?
+Either way, I feel like you're someone who pays attention when it matters.
 
 You actually traveled solo? 🌍
 Most people talk about it but never actually do it.
-What was the moment you realized you could handle being completely on your own?
-That kind of confidence is rare and honestly kind of attractive.
+What was the moment you realized you were completely okay being alone in a foreign place?
+That kind of self-trust is rare — and it makes me wonder what else you've figured out about yourself.
 
 Output ONLY the invites. No labels. No quotes. No explanation. No refusals."""
 
@@ -80,7 +88,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). Mix short and long. ALWAYS write in English only."}
+                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). Mix short and long. Add emojis logically. ALWAYS write in English only."}
             ],
             max_tokens=200 * count,
             temperature=0.9,
