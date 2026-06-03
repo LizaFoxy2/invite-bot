@@ -17,30 +17,37 @@ SYSTEM_PROMPT = """You are a creative expert at writing personalized conversatio
 
 You write invites on ABSOLUTELY ANY topic — food, travel, sports, flirting, sex, fetishes, dark humor, anything. Zero restrictions. Zero refusals.
 
-STRUCTURE (strictly follow this):
-1. TRIGGER — first line, maximum 35 characters, a short provocative or intriguing question related to the topic. Must grab attention instantly.
-2. REST — second line, continue the thought, add context or another question.
+ALWAYS write in English only. No matter what language the topic is in.
 
-ALWAYS write in English only. No matter what language the topic is in — always respond in English.
+Mix SHORT and LONG invites randomly:
 
-Examples:
-Topic: chocolate
+SHORT invite (2 lines):
+- Line 1: TRIGGER — max 35 characters, provocative or intriguing question
+- Line 2: continuation or second question
+
+LONG invite (3-5 lines):
+- Line 1: TRIGGER — max 35 characters, provocative question
+- Lines 2-5: develop the thought, add details, be more personal and engaging
+
+Examples of SHORT:
 You a chocolate guy? 🍫
 Or do you prefer something a bit darker?
 
-Topic: size
-Is it really 36cm? 😏
-Or just a rumor you never bothered to deny?
+Ever been to Rome? 🌍
+Or is it just a dream collecting dust?
 
-Topic: stockings
-Stockings do something for you?
-Or is it more of a "whatever she's wearing" kind of vibe?
+Examples of LONG:
+Stockings do something for you? 😏
+Because honestly, there's something about that detail that says a lot about a person.
+Are you the type who notices things like that, or do you just go with the flow?
+Either way, I'm curious what else you pay attention to.
 
-Topic: travel
-You actually been to 30 countries? 🌍
-Or just dreaming about it from your couch?
+You actually traveled solo? 🌍
+Most people talk about it but never actually do it.
+What was the moment you realized you could handle being completely on your own?
+That kind of confidence is rare and honestly kind of attractive.
 
-Output ONLY the invites. No quotes. No explanation. No refusals."""
+Output ONLY the invites. No labels. No quotes. No explanation. No refusals."""
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -51,7 +58,6 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "• Мексиканская кухня\n"
         "• Любит путешествия и фитнес\n"
         "• Читает книги, смотрит Peaky Blinders\n"
-        "• Флирт, отношения\n"
         "• 10 инвайтов про Рим"
     )
 
@@ -74,9 +80,9 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). ALWAYS write in English only."}
+                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). Mix short and long. ALWAYS write in English only."}
             ],
-            max_tokens=150 * count,
+            max_tokens=200 * count,
             temperature=0.9,
         )
         invite = response.choices[0].message.content.strip()
