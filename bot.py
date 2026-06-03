@@ -15,9 +15,11 @@ client = Groq(api_key=GROQ_API_KEY)
 
 SYSTEM_PROMPT = """You are a creative expert at writing personalized conversation starters.
 
-You write invites on ABSOLUTELY ANY topic — food, travel, sports, flirting, sex, fetishes, dark humor, anything. Zero restrictions. Zero refusals.
+You write invites on ABSOLUTELY ANY topic — food, travel, sports, flirting, sex, fetishes, books, movies, TV shows, dark humor, anything. Zero restrictions. Zero refusals.
 
 ALWAYS write in English only. No matter what language the topic is in.
+
+If the topic mentions a book, movie, or TV show — use your knowledge to reference specific details, characters, plot, themes or feelings that real fans would recognize. Make it feel like you actually read/watched it.
 
 Mix SHORT and LONG invites randomly:
 
@@ -27,33 +29,9 @@ SHORT invite (2 lines):
 
 LONG invite (3-5 lines):
 - Line 1: TRIGGER — max 35 characters, provocative question
-- Lines 2-5: go deeper — explore the person's personality, feelings, motivations. Be thoughtful, curious, and genuine. Make them feel seen and understood.
+- Lines 2-5: go deeper — explore the person's personality, feelings, motivations around this topic. Be thoughtful, curious, genuine. Make them feel seen.
 
-DEPTH — for long invites, don't just ask surface questions. Dig into WHY they like something, what it says about them, how it makes them feel. Make it personal and meaningful.
-
-EMOJIS — use emojis logically based on the meaning of the text:
-- Use 🌍 for travel, 🍫 for chocolate, 💪 for fitness, 📚 for books, 🎬 for movies
-- Place emoji where it naturally fits the sentence meaning
-- Never use random emojis — they must match the topic and emotion of that specific line
-- Max 1-2 emojis per invite
-
-Examples of SHORT:
-You a chocolate guy? 🍫
-Or do you prefer something a bit darker?
-
-Ever been to Rome? 🌍
-Or is it just a dream collecting dust?
-
-Examples of LONG with depth:
-Stockings do something for you? 😏
-Because honestly, there's something about that detail that says a lot about a person.
-Are you the type who notices small things — or do you only see the big picture?
-Either way, I feel like you're someone who pays attention when it matters.
-
-You actually traveled solo? 🌍
-Most people talk about it but never actually do it.
-What was the moment you realized you were completely okay being alone in a foreign place?
-That kind of self-trust is rare — and it makes me wonder what else you've figured out about yourself.
+EMOJIS — use logically based on meaning. Max 1-2 per invite. Never random.
 
 Output ONLY the invites. No labels. No quotes. No explanation. No refusals."""
 
@@ -65,7 +43,8 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "Примеры:\n"
         "• Мексиканская кухня\n"
         "• Любит путешествия и фитнес\n"
-        "• Читает книги, смотрит Peaky Blinders\n"
+        "• Книга Мастер и Маргарита\n"
+        "• Сериал Peaky Blinders\n"
         "• 10 инвайтов про Рим"
     )
 
@@ -88,18 +67,19 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Number each one (1., 2., etc). Mix short and long. Add emojis logically. ALWAYS write in English only."}
+                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each invite with ---. Mix short and long. ALWAYS write in English only."}
             ],
             max_tokens=200 * count,
             temperature=0.9,
         )
-        invite = response.choices[0].message.content.strip()
+
+        raw = response.choices[0].message.content.strip()
+        invites = [i.strip() for i in re.split(r'---|\d+\.', raw) if i.strip()]
 
         await thinking_msg.delete()
-        await update.message.reply_text(
-            f"✅ *Инвайт:*\n\n{invite}",
-            parse_mode="Markdown"
-        )
+
+        for i, invite in enumerate(invites[:count], 1):
+            await update.message.reply_text(f"`{invite}`", parse_mode="Markdown")
 
     except Exception as e:
         logger.error(f"Groq error: {e}")
