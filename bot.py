@@ -78,8 +78,11 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
         await thinking_msg.delete()
 
-        for i, invite in enumerate(invites[:count], 1):
-            await update.message.reply_text(f"`{invite}`", parse_mode="Markdown")
+        for invite in invites[:count]:
+            await update.message.reply_text(
+                f"✅ *Инвайт:*\n\n{invite}",
+                parse_mode="Markdown"
+            )
 
     except Exception as e:
         logger.error(f"Groq error: {e}")
