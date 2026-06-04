@@ -3,15 +3,18 @@ import os
 import re
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from groq import Groq
+from openai import OpenAI
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-GROQ_API_KEY = os.environ["GROQ_API_KEY"]
+OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-client = Groq(api_key=GROQ_API_KEY)
+client = OpenAI(
+    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENROUTER_API_KEY,
+)
 
 SYSTEM_PROMPT = """You are a creative expert at writing personalized conversation starters.
 
@@ -39,10 +42,6 @@ Would you love to dive right in?
 Topic: sex
 You the type who takes control in bed?
 Or do you prefer when someone else sets the pace... and makes you beg for more?
-
-Topic: body
-That body looks like trouble 🔥
-Are you as dangerous as you look, or just a pretty face with hidden depth?
 
 EMOJIS — use logically based on meaning and emotion. Max 1-2 per invite. Never random.
 
@@ -77,13 +76,12 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         count = min(count, 50)
 
         response = client.chat.completions.create(
-            model=os.environ.get("GROQ_MODEL", "llama-3.1-8b-instant"),
+            model="meta-llama/llama-3.3-70b-instruct:free",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English only."}
             ],
             max_tokens=200 * count,
-            temperature=0.9,
         )
 
         raw = response.choices[0].message.content.strip()
@@ -96,7 +94,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text(f"`{invite}`", parse_mode="Markdown")
 
     except Exception as e:
-        logger.error(f"Groq error: {e}")
+        logger.error(f"Error: {e}")
         await thinking_msg.delete()
         await update.message.reply_text(f"❌ Ошибка: {e}")
 
