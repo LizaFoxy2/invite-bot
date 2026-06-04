@@ -76,7 +76,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         count = min(count, 50)
 
         response = client.chat.completions.create(
-            model="google/gemma-3-27b-it:free",
+            model="mistralai/mistral-7b-instruct:free",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English only."}
