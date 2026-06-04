@@ -76,7 +76,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
         count = min(count, 50)
 
         response = client.chat.completions.create(
-            model="mistralai/mistral-7b-instruct:free",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
                 {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English only."}
