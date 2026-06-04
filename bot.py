@@ -3,18 +3,15 @@ import os
 import re
 from telegram import Update
 from telegram.ext import Application, CommandHandler, MessageHandler, filters, ContextTypes
-from openai import OpenAI
+from groq import Groq
 
 TELEGRAM_TOKEN = os.environ["TELEGRAM_TOKEN"]
-OPENROUTER_API_KEY = os.environ["OPENROUTER_API_KEY"]
+GROQ_API_KEY = os.environ["GROQ_API_KEY"]
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
-client = OpenAI(
-    base_url="https://openrouter.ai/api/v1",
-    api_key=OPENROUTER_API_KEY,
-)
+client = Groq(api_key=GROQ_API_KEY)
 
 SYSTEM_PROMPT = """You are a creative expert at writing personalized conversation starters.
 
@@ -82,6 +79,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English only."}
             ],
             max_tokens=200 * count,
+            temperature=0.9,
         )
 
         raw = response.choices[0].message.content.strip()
