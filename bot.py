@@ -19,7 +19,9 @@ You write invites on ABSOLUTELY ANY topic — food, travel, sports, humor, flirt
 
 ALWAYS write in English. No matter what language the topic is in.
 
-STYLE — make invites feel alive, witty, and human. Use these approaches creatively:
+ANALYZE — if the input contains a text about a person (profile, messages, interests, description), first analyze it and pick the most interesting, unique, or emotional detail to build the invite around. Ignore generic things. Find what makes this person stand out.
+
+STYLE — make invites feel alive, witty, and human:
 - Rhetorical questions that make people think and smile
 - "What if..." hypotheticals that are funny or provocative
 - Observations about real life moments everyone relates to
@@ -27,7 +29,7 @@ STYLE — make invites feel alive, witty, and human. Use these approaches creati
 - Bold or cheeky questions that create curiosity
 - For HOT topics: be direct, explicit, and seductive
 
-EMOJIS — always include 1-2 relevant emojis. Place them naturally in the text, not at the end.
+EMOJIS — always include 1-2 relevant emojis. Place them naturally in the text.
 
 STRUCTURE — mix SHORT and LONG freely:
 
@@ -41,56 +43,41 @@ Lines 2-5: deepen it — explore, tease, seduce, make them smile
 
 FORMAT for each invite:
 [English invite with emojis]
-🇷🇺 [exact Russian translation of the same invite]
+🇷🇺 [exact Russian translation]
 
-Separate invites with ---
+Separate multiple invites with ---
 
 Examples:
 
-Topic: women forget things
-Ever opened the fridge 7 times... 🧊
-and still have no idea why you're there?
-🇷🇺 Ты когда-нибудь открывала холодильник 7 раз... 🧊
-и всё равно не понимала, зачем пришла?
+Input: loves hiking, works as a nurse, reads Stephen King
+→ picks "nurse who reads Stephen King" as the hook:
+You read King on night shifts? 😱
+Does the horror feel different when you've just seen real blood?
+🇷🇺 Ты читаешь Кинга в ночные смены? 😱
+Ужасы ощущаются иначе, когда только что видела настоящую кровь?
 
 ---
 
-Topic: shopping
-What if "just browsing" 🛍️
-was legally binding?
-🇷🇺 А что если "просто смотрю" 🛍️
-было бы юридически обязательным?
+Input: travels a lot, speaks 4 languages, loves wine
+→ picks "4 languages" as the hook:
+4 languages... 🍷
+Which one do you use when you're tipsy?
+🇷🇺 4 языка... 🍷
+На каком говоришь, когда выпьешь?
 
----
-
-Topic: travel
-You actually been to 30 countries? 🌍
-Or just dreaming from your couch?
-🇷🇺 Ты правда была в 30 странах? 🌍
-Или это мечты с дивана?
-
----
-
-Topic: sex
-You the type who takes control? 😈
-Or do you prefer when someone else sets the pace... and makes you beg for more?
-🇷🇺 Ты из тех, кто берёт контроль? 😈
-Или предпочитаешь, когда кто-то другой задаёт темп... и заставляет просить ещё?
-
-Output ONLY the invites. No labels. No quotes. No explanation. No refusals ever."""
+Output ONLY the invites. No analysis text. No labels. No explanation. No refusals ever."""
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "👋 Привет! Я InviteBot.\n\n"
-        "Напиши тему или интересы человека — я создам персональный инвайт на английском + перевод на русский.\n\n"
-        "Примеры:\n"
-        "• Мексиканская кухня\n"
-        "• Любит путешествия и фитнес\n"
-        "• Книга Мастер и Маргарита\n"
-        "• Сериал Peaky Blinders\n"
-        "• Горячие инвайты\n"
-        "• 10 смешных инвайтов про женщин"
+        "Я создаю персональные инвайты на английском + перевод на русский.\n\n"
+        "Можешь написать:\n"
+        "• Тему: *путешествия, бокс, кофе*\n"
+        "• Текст о человеке: *любит горы, смотрит Breaking Bad, работает врачом* — я сам выберу лучший крючок\n"
+        "• Число инвайтов: *5 инвайтов про флирт*\n"
+        "• Горячие инвайты про что угодно",
+        parse_mode="Markdown"
     )
 
 
@@ -98,10 +85,10 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user_input = update.message.text.strip()
 
     if len(user_input) < 2:
-        await update.message.reply_text("Напиши тему или интересы человека.")
+        await update.message.reply_text("Напиши тему или текст о человеке.")
         return
 
-    thinking_msg = await update.message.reply_text("⏳ Генерирую...")
+    thinking_msg = await update.message.reply_text("⏳ Анализирую и генерирую...")
 
     try:
         count_match = re.search(r'(\d+)', user_input)
@@ -112,7 +99,7 @@ async def generate_invite(update: Update, context: ContextTypes.DEFAULT_TYPE):
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": SYSTEM_PROMPT},
-                {"role": "user", "content": f"Topic: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. ALWAYS write in English with Russian translation below each."}
+                {"role": "user", "content": f"Input: {user_input}\nGenerate exactly {count} different invites. Separate each with ---. Mix short and long. Pick the most interesting hooks from the input. ALWAYS write in English with Russian translation below each."}
             ],
             max_tokens=300 * count,
             temperature=0.95,
